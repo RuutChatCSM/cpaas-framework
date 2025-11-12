@@ -323,6 +323,34 @@ services:
           memory: 128M
 
   # =============================================================================
+  # STUN/TURN SERVER (for WebRTC NAT traversal)
+  # =============================================================================
+
+  coturn:
+    image: coturn/coturn:4.6.2-alpine
+    container_name: somleng_coturn
+    restart: ${RESTART_POLICY:-unless-stopped}
+    env_file:
+      - .env
+    ports:
+      - "3478:3478/udp"
+      - "3478:3478/tcp"
+      - "5349:5349/tcp"
+      - "49152-65535:49152-65535/udp"
+    volumes:
+      - ./stun-turn/turnserver.conf:/etc/turnserver.conf:ro
+      - ./nginx/ssl:/etc/ssl/certs:ro
+    command: ["-c", "/etc/turnserver.conf"]
+    networks:
+      - somleng_network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+
+  # =============================================================================
   # REVERSE PROXY AND LOAD BALANCER
   # =============================================================================
 
