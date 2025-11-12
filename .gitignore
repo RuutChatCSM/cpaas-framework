@@ -1,0 +1,90 @@
+# Environment files
+.env
+.env.local
+.env.production
+
+# SSL certificates and keys
+nginx/ssl/*.pem
+nginx/ssl/*.key
+nginx/ssl/*.crt
+
+# Logs
+*.log
+logs/
+nginx/logs/
+monitoring/logs/
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Docker volumes (if mounted locally)
+data/
+volumes/
+
+# Backup files
+backups/
+*.backup
+*.sql.gz
+*.tar.gz
+
+# Runtime files
+*.pid
+*.sock
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Node modules (if any)
+node_modules/
+npm-debug.log*
+
+# Python cache (if any)
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ruby cache (if any)
+.bundle/
+vendor/bundle/
+
+# Local development overrides
+docker-compose.override.yml
+docker-compose.local.yml
+
+# Secrets and credentials
+secrets/
+credentials/
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Database dumps
+*.sql
+*.dump
+
+# Monitoring data
+prometheus_data/
+grafana_data/
+elasticsearch_data/
+
+# Test files
+test_results/
+coverage/

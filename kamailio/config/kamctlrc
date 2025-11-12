@@ -1,0 +1,24 @@
+# Kamailio control tool configuration
+
+# Database settings
+DBENGINE=POSTGRES
+DBHOST=db
+DBPORT=5432
+DBNAME=kamailio
+DBRWUSER=kamailio
+DBRWPW=kamailio_secure_password_2024
+DBROUSER=kamailio
+DBROPW=kamailio_secure_password_2024
+
+# SIP domain
+SIP_DOMAIN=yourdomain.com
+
+# Control interface
+CTLENGINE=binrpc
+CTLSOCKET="/var/run/kamailio/kamailio_ctl"
+
+# Kamailio configuration file
+KAMCFG="/etc/kamailio/kamailio.cfg"
+
+# PID file
+PIDFILE="/var/run/kamailio/kamailio.pid"

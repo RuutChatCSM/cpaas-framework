@@ -1,0 +1,164 @@
+groups:
+  - name: somleng-cpaas-alerts
+    rules:
+      # High-level service availability
+      - alert: SomlengWebDown
+        expr: up{job="somleng-web"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Somleng Web service is down"
+          description: "Somleng Web service has been down for more than 1 minute."
+
+      - alert: FreeSWITCHDown
+        expr: up{job="freeswitch"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "FreeSWITCH node is down"
+          description: "FreeSWITCH node {{ $labels.instance }} has been down for more than 30 seconds."
+
+      - alert: KamailioDown
+        expr: up{job="kamailio"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Kamailio SIP router is down"
+          description: "Kamailio SIP router has been down for more than 30 seconds."
+
+      # Database alerts
+      - alert: PostgreSQLDown
+        expr: up{job="postgres"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL database is down"
+          description: "PostgreSQL database has been down for more than 1 minute."
+
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis is down"
+          description: "Redis has been down for more than 1 minute."
+
+      # Performance alerts
+      - alert: HighCPUUsage
+        expr: (100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is above 80% for more than 5 minutes on {{ $labels.instance }}."
+
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is above 85% for more than 5 minutes on {{ $labels.instance }}."
+
+      - alert: DiskSpaceLow
+        expr: (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space"
+          description: "Disk space usage is above 85% on {{ $labels.instance }} mount {{ $labels.mountpoint }}."
+
+      # Call quality alerts
+      - alert: HighCallFailureRate
+        expr: rate(freeswitch_calls_failed_total[5m]) / rate(freeswitch_calls_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High call failure rate"
+          description: "Call failure rate is above 10% for more than 2 minutes."
+
+      - alert: HighConcurrentCalls
+        expr: freeswitch_concurrent_calls > 500
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High concurrent calls"
+          description: "Concurrent calls count is above 500 on {{ $labels.instance }}."
+
+      # SIP registration alerts
+      - alert: LowSIPRegistrations
+        expr: kamailio_registrations < 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low SIP registrations"
+          description: "SIP registrations count is below 10 for more than 5 minutes."
+
+      # Queue alerts
+      - alert: SidekiqQueueBacklog
+        expr: sidekiq_queue_size > 1000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Sidekiq queue backlog"
+          description: "Sidekiq queue size is above 1000 jobs for more than 5 minutes."
+
+      - alert: SidekiqDeadJobs
+        expr: sidekiq_dead_jobs > 10
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Sidekiq dead jobs detected"
+          description: "More than 10 dead jobs detected in Sidekiq."
+
+      # Network alerts
+      - alert: HighNetworkTraffic
+        expr: rate(node_network_receive_bytes_total[5m]) > 100000000  # 100MB/s
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High network traffic"
+          description: "Network receive traffic is above 100MB/s for more than 5 minutes on {{ $labels.instance }}."
+
+      # SSL certificate expiry
+      - alert: SSLCertificateExpiringSoon
+        expr: probe_ssl_earliest_cert_expiry - time() < 86400 * 7  # 7 days
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "SSL certificate expiring soon"
+          description: "SSL certificate for {{ $labels.instance }} expires in less than 7 days."
+
+      # RTP Engine alerts
+      - alert: RTPEngineDown
+        expr: up{job="rtpengine"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "RTPEngine is down"
+          description: "RTPEngine has been down for more than 30 seconds."
+
+      - alert: HighRTPPacketLoss
+        expr: rtpengine_packet_loss_rate > 0.05  # 5%
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High RTP packet loss"
+          description: "RTP packet loss rate is above 5% for more than 2 minutes."
