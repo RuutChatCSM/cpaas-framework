@@ -228,7 +228,7 @@ services:
   # =============================================================================
 
   kamailio:
-    image: kamailio/kamailio:5.7-alpine
+    image: kamailio/kamailio-ci:latest
     container_name: somleng_kamailio
     restart: ${RESTART_POLICY:-unless-stopped}
     env_file:
@@ -268,7 +268,7 @@ services:
           memory: 256M
 
   rtpengine:
-    image: sipwise/rtpengine:latest
+    image: davehorton/rtpengine:latest
     container_name: somleng_rtpengine
     restart: ${RESTART_POLICY:-unless-stopped}
     network_mode: host
@@ -335,7 +335,7 @@ services:
   # =============================================================================
 
   coturn:
-    image: coturn/coturn:4.6.2-alpine
+    image: coturn/coturn:latest
     container_name: somleng_coturn
     restart: ${RESTART_POLICY:-unless-stopped}
     env_file:
@@ -363,7 +363,7 @@ services:
   # =============================================================================
 
   nginx:
-    image: nginx:1.25-alpine
+    image: nginx:alpine
     container_name: somleng_nginx
     restart: ${RESTART_POLICY:-unless-stopped}
     ports:
