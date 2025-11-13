@@ -225,8 +225,7 @@ services:
   # =============================================================================
 
   freeswitch1:
-    build:
-      context: /tmp/somleng-switch/components/freeswitch
+    image: drachtio/freeswitch:latest
     container_name: somleng_freeswitch1
     restart: ${RESTART_POLICY:-unless-stopped}
     environment:
@@ -263,8 +262,7 @@ services:
           memory: 512M
 
   freeswitch2:
-    build:
-      context: /tmp/somleng-switch/components/freeswitch
+    image: drachtio/freeswitch:latest
     container_name: somleng_freeswitch2
     restart: ${RESTART_POLICY:-unless-stopped}
     environment:
