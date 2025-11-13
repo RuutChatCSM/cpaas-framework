@@ -59,10 +59,10 @@ check_prerequisites() {
 validate_config() {
     print_status "Validating configuration..."
     
-    if ! grep -q "PUBLIC_IP=YOUR_PUBLIC_IP_HERE" .env.example; then
+    if ! grep -q "PUBLIC_IP=YOUR_PUBLIC_IP_HERE" .env; then
         print_success "Configuration appears to be customized"
     else
-        print_error "Please configure .env.example with your actual values!"
+        print_error "Please configure .env with your actual values!"
         print_warning "At minimum, set: PUBLIC_IP, POSTGRES_PASSWORD, SECRET_KEY_BASE"
         exit 1
     fi
@@ -72,8 +72,11 @@ validate_config() {
 deploy_infrastructure() {
     print_status "Building and starting Somleng infrastructure..."
     
-    # Copy environment file
-    cp .env.example .env
+    # Environment file should already exist as .env
+    if [ ! -f ".env" ]; then
+        print_error ".env file not found! Please copy .env.example to .env and configure it."
+        exit 1
+    fi
     
     # Stop any existing containers
     print_status "Stopping existing containers..."
