@@ -17,8 +17,8 @@ fi
 
 # Fix 2: Fix RTP port ranges in FreeSWITCH services
 echo "🔧 Fixing RTP port ranges..."
-sed -i 's/\${RTP_START_PORT:-16384}-\${RTP_END_PORT:-32768}:16384-32768/16384-32768:16384-32768/g' docker-compose.yml
-sed -i 's/32769-49152:\${RTP_START_PORT:-16384}-\${RTP_END_PORT:-32768}/32769-49152:16384-32768/g' docker-compose.yml
+sed -i 's/16384-32768:16384-32768/16384-32767:16384-32767/g' docker-compose.yml
+sed -i 's/32769-49152:16384-32768/32768-49151:16384-32767/g' docker-compose.yml
 echo "✅ Fixed RTP port ranges"
 
 # Fix 3: Check for undefined variables in .env

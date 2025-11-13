@@ -149,7 +149,7 @@ services:
       - "5062:5060/tcp"
       - "5063:5061/tcp"
       - "8021:8021"  # Event Socket
-      - "16384-32768:16384-32768/udp"
+      - "16384-32767:16384-32767/udp"
     volumes:
       - freeswitch1_logs:/usr/local/freeswitch/log
       - freeswitch1_recordings:/usr/local/freeswitch/recordings
@@ -191,7 +191,7 @@ services:
       - "5064:5060/tcp"
       - "5065:5061/tcp"
       - "8022:8021"  # Event Socket
-      - "32769-49152:16384-32768/udp"
+      - "32768-49151:16384-32767/udp"
     volumes:
       - freeswitch2_logs:/usr/local/freeswitch/log
       - freeswitch2_recordings:/usr/local/freeswitch/recordings
