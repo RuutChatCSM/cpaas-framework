@@ -1,0 +1,35 @@
+<include>
+  <profile name="internal">
+    <gateways>
+    </gateways>
+    <domains>
+      <domain name="$${domain}"/>
+    </domains>
+    <settings>
+      <param name="debug" value="0"/>
+      <param name="sip-trace" value="no"/>
+      <param name="sip-capture" value="no"/>
+      <param name="rfc2833-pt" value="101"/>
+      <param name="dtmf-duration" value="2000"/>
+      <param name="codec-prefs" value="PCMU,PCMA"/>
+      <param name="hold-music" value="$${hold_music}"/>
+      <param name="use-rtp-timer" value="true"/>
+      <param name="rtp-timer-name" value="soft"/>
+      <param name="rtp-ip" value="$${local_ip_v4}"/>
+      <param name="sip-ip" value="$${local_ip_v4}"/>
+      <param name="ext-rtp-ip" value="${EXT_RTP_IP}"/>
+      <param name="ext-sip-ip" value="${EXT_SIP_IP}"/>
+      <param name="rtp-timeout-sec" value="300"/>
+      <param name="rtp-hold-timeout-sec" value="1800"/>
+      <param name="dialplan" value="XML"/>
+      <param name="context" value="default"/>
+      <param name="dtmf-mode" value="rfc2833"/>
+      <param name="vad" value="none"/>
+      <param name="inbound-codec-negotiation" value="generous"/>
+      <param name="nonce-ttl" value="60"/>
+      <param name="auth-calls" value="true"/>
+      <param name="auth-all-packets" value="false"/>
+      <param name="ext-rtp-ip" value="${EXT_RTP_IP}"/>
+    </settings>
+  </profile>
+</include>

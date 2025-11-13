@@ -30,7 +30,7 @@ ENV TZ=UTC
 RUN mkdir -p /usr/local/freeswitch/{log,recordings,scripts,conf}
 
 # Copy custom configuration
-COPY freeswitch/config/ /usr/local/freeswitch/conf/
+COPY config/ /usr/local/freeswitch/conf/
 
 # Set permissions
 RUN chown -R freeswitch:freeswitch /usr/local/freeswitch
