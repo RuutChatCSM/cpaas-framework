@@ -53,11 +53,11 @@ fi
 
 # Fix 4: Validate docker-compose.yml syntax
 echo "🔍 Validating docker-compose.yml syntax..."
-if docker-compose config > /dev/null 2>&1; then
+if docker compose config > /dev/null 2>&1; then
     echo "✅ docker-compose.yml syntax is valid"
 else
     echo "❌ docker-compose.yml has syntax errors. Running config check:"
-    docker-compose config
+    docker compose config
     exit 1
 fi
 
@@ -71,10 +71,10 @@ echo "   - Set SOMLENG_DOMAIN to your domain name"
 echo "   - Update database passwords and secrets"
 echo ""
 echo "2. Run the deployment:"
-echo "   docker-compose up -d"
+echo "   docker compose up -d"
 echo ""
 echo "3. Check service status:"
-echo "   docker-compose ps"
+echo "   docker compose ps"
 echo ""
 echo "4. View logs if needed:"
-echo "   docker-compose logs -f"
+echo "   docker compose logs -f"

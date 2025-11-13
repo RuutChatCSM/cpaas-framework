@@ -62,7 +62,9 @@ services:
   # =============================================================================
 
   web:
-    image: somleng/somleng:latest
+    build:
+      context: ./build/somleng
+      dockerfile: Dockerfile
     container_name: somleng_web
     restart: ${RESTART_POLICY:-unless-stopped}
     env_file:
@@ -97,7 +99,9 @@ services:
           memory: 512M
 
   sidekiq:
-    image: somleng/somleng:latest
+    build:
+      context: ./build/somleng
+      dockerfile: Dockerfile
     container_name: somleng_sidekiq
     restart: ${RESTART_POLICY:-unless-stopped}
     command: bundle exec sidekiq -c ${SIDEKIQ_CONCURRENCY:-10}
@@ -132,7 +136,9 @@ services:
   # =============================================================================
 
   freeswitch1:
-    image: somleng/somleng-freeswitch:latest
+    build:
+      context: ./build/somleng-freeswitch
+      dockerfile: Dockerfile
     container_name: somleng_freeswitch1
     restart: ${RESTART_POLICY:-unless-stopped}
     env_file:
@@ -174,7 +180,9 @@ services:
           memory: 512M
 
   freeswitch2:
-    image: somleng/somleng-freeswitch:latest
+    build:
+      context: ./build/somleng-freeswitch
+      dockerfile: Dockerfile
     container_name: somleng_freeswitch2
     restart: ${RESTART_POLICY:-unless-stopped}
     env_file:
@@ -294,7 +302,9 @@ services:
   # =============================================================================
 
   sms_gateway:
-    image: somleng/sms-gateway:latest
+    build:
+      context: ./build/sms-gateway
+      dockerfile: Dockerfile
     container_name: somleng_sms_gateway
     restart: ${RESTART_POLICY:-unless-stopped}
     env_file:
