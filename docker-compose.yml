@@ -62,9 +62,7 @@ services:
   # =============================================================================
 
   web:
-    build:
-      context: ./build/somleng
-      dockerfile: Dockerfile
+    image: ghcr.io/somleng/somleng:latest
     container_name: somleng_web
     restart: ${RESTART_POLICY:-unless-stopped}
     env_file:
@@ -99,9 +97,7 @@ services:
           memory: 512M
 
   sidekiq:
-    build:
-      context: ./build/somleng
-      dockerfile: Dockerfile
+    image: ghcr.io/somleng/somleng:latest
     container_name: somleng_sidekiq
     restart: ${RESTART_POLICY:-unless-stopped}
     command: bundle exec sidekiq -c ${SIDEKIQ_CONCURRENCY:-10}
@@ -136,9 +132,7 @@ services:
   # =============================================================================
 
   freeswitch1:
-    build:
-      context: ./build/somleng-freeswitch
-      dockerfile: Dockerfile
+    image: ghcr.io/somleng/freeswitch:latest
     container_name: somleng_freeswitch1
     restart: ${RESTART_POLICY:-unless-stopped}
     env_file:
@@ -180,9 +174,7 @@ services:
           memory: 512M
 
   freeswitch2:
-    build:
-      context: ./build/somleng-freeswitch
-      dockerfile: Dockerfile
+    image: ghcr.io/somleng/freeswitch:latest
     container_name: somleng_freeswitch2
     restart: ${RESTART_POLICY:-unless-stopped}
     env_file:
@@ -222,6 +214,37 @@ services:
           memory: 1G
         reservations:
           memory: 512M
+
+  somleng-switch:
+    image: ghcr.io/somleng/switch-app:latest
+    container_name: somleng_switch
+    restart: ${RESTART_POLICY:-unless-stopped}
+    env_file:
+      - .env
+    environment:
+      - AHN_CORE_HOST=freeswitch1
+      - AHN_CORE_HTTP_PORT=8080
+      - CALL_PLATFORM_HOST=http://web:3000
+      - REDIS_URL=${REDIS_URL}
+    depends_on:
+      redis:
+        condition: service_healthy
+      freeswitch1:
+        condition: service_healthy
+    networks:
+      somleng_network:
+        ipv4_address: 172.20.0.12
+    healthcheck:
+      test: ["CMD-SHELL", "wget --server-response --spider --quiet http://0.0.0.0:8080/health_checks 2>&1 | grep '200 OK' > /dev/null"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
 
   # =============================================================================
   # SIP ROUTING AND SBC
@@ -302,9 +325,7 @@ services:
   # =============================================================================
 
   sms_gateway:
-    build:
-      context: ./build/sms-gateway
-      dockerfile: Dockerfile
+    image: ghcr.io/somleng/sms-gateway:latest
     container_name: somleng_sms_gateway
     restart: ${RESTART_POLICY:-unless-stopped}
     env_file:
