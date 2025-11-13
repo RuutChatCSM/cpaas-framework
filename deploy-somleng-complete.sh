@@ -37,13 +37,13 @@ print_error() {
 check_prerequisites() {
     print_status "Checking prerequisites..."
     
-    if [ ! -f "docker-compose-somleng-complete.yml" ]; then
-        print_error "docker-compose-somleng-complete.yml not found!"
+    if [ ! -f "docker-compose.yml" ]; then
+        print_error "docker-compose.yml not found!"
         exit 1
     fi
     
-    if [ ! -f ".env.somleng-complete" ]; then
-        print_error ".env.somleng-complete not found!"
+    if [ ! -f ".env.example" ]; then
+        print_error ".env.example not found!"
         exit 1
     fi
     
@@ -59,10 +59,10 @@ check_prerequisites() {
 validate_config() {
     print_status "Validating configuration..."
     
-    if ! grep -q "PUBLIC_IP=YOUR_PUBLIC_IP_HERE" .env.somleng-complete; then
+    if ! grep -q "PUBLIC_IP=YOUR_PUBLIC_IP_HERE" .env.example; then
         print_success "Configuration appears to be customized"
     else
-        print_error "Please configure .env.somleng-complete with your actual values!"
+        print_error "Please configure .env.example with your actual values!"
         print_warning "At minimum, set: PUBLIC_IP, POSTGRES_PASSWORD, SECRET_KEY_BASE"
         exit 1
     fi
@@ -73,25 +73,25 @@ deploy_infrastructure() {
     print_status "Building and starting Somleng infrastructure..."
     
     # Copy environment file
-    cp .env.somleng-complete .env
+    cp .env.example .env
     
     # Stop any existing containers
     print_status "Stopping existing containers..."
-    docker-compose -f docker-compose-somleng-complete.yml down --remove-orphans 2>/dev/null || true
+    docker-compose down --remove-orphans 2>/dev/null || true
     
     # Build images
     print_status "Building custom images..."
-    docker-compose -f docker-compose-somleng-complete.yml build --parallel
+    docker-compose build --parallel
     
     # Start infrastructure services first
     print_status "Starting infrastructure services..."
-    docker-compose -f docker-compose-somleng-complete.yml up -d db redis
+    docker-compose up -d db redis
     
     # Wait for database
     print_status "Waiting for database to be ready..."
     timeout=60
     while [ $timeout -gt 0 ]; do
-        if docker-compose -f docker-compose-somleng-complete.yml exec -T db pg_isready -U postgres > /dev/null 2>&1; then
+        if docker-compose exec -T db pg_isready -U postgres > /dev/null 2>&1; then
             break
         fi
         sleep 2
@@ -107,30 +107,30 @@ deploy_infrastructure() {
     
     # Initialize databases
     print_status "Initializing OpenSIPS databases..."
-    docker-compose -f docker-compose-somleng-complete.yml up gateway_bootstrap
-    docker-compose -f docker-compose-somleng-complete.yml rm -f gateway_bootstrap
+    docker-compose up gateway_bootstrap
+    docker-compose rm -f gateway_bootstrap
     
     # Start core Somleng services
     print_status "Starting Somleng Core services..."
-    docker-compose -f docker-compose-somleng-complete.yml up -d somleng_web somleng_sidekiq
+    docker-compose up -d somleng_web somleng_sidekiq
     
     # Start SomlengSWITCH infrastructure
     print_status "Starting SomlengSWITCH infrastructure..."
     
     # Start media proxy
-    docker-compose -f docker-compose-somleng-complete.yml up -d media_proxy
+    docker-compose up -d media_proxy
     
     # Start gateways
-    docker-compose -f docker-compose-somleng-complete.yml up -d public_gateway client_gateway
+    docker-compose up -d public_gateway client_gateway
     
     # Start FreeSWITCH cluster
-    docker-compose -f docker-compose-somleng-complete.yml up -d freeswitch1 freeswitch2
+    docker-compose up -d freeswitch1 freeswitch2
     
     # Start TwiML engine
-    docker-compose -f docker-compose-somleng-complete.yml up -d somleng_switch_app
+    docker-compose up -d somleng_switch_app
     
     # Start supporting services
-    docker-compose -f docker-compose-somleng-complete.yml up -d \
+    docker-compose up -d \
         freeswitch1_event_logger \
         freeswitch2_event_logger \
         somleng_services \
@@ -166,7 +166,7 @@ health_check() {
         
         timeout=30
         while [ $timeout -gt 0 ]; do
-            if docker-compose -f docker-compose-somleng-complete.yml exec -T $container nc -z localhost $port > /dev/null 2>&1; then
+            if docker-compose exec -T $container nc -z localhost $port > /dev/null 2>&1; then
                 print_success "$container:$port is healthy"
                 break
             fi
@@ -184,7 +184,7 @@ health_check() {
 show_status() {
     print_status "Deployment Status:"
     echo "=================="
-    docker-compose -f docker-compose-somleng-complete.yml ps
+    docker-compose ps
     
     echo ""
     print_status "Service URLs:"
@@ -211,7 +211,7 @@ show_status() {
     echo "1. Configure your SIP carriers to connect to localhost:5060"
     echo "2. Set up customer SIP accounts via Somleng dashboard"
     echo "3. Test API functionality with: curl http://localhost:3000/health"
-    echo "4. Monitor logs with: docker-compose -f docker-compose-somleng-complete.yml logs -f"
+    echo "4. Monitor logs with: docker-compose logs -f"
 }
 
 # Main execution
@@ -223,7 +223,7 @@ main() {
     show_status
     
     print_success "🎉 Complete Somleng Infrastructure deployment completed!"
-    print_status "Check logs with: docker-compose -f docker-compose-somleng-complete.yml logs -f"
+    print_status "Check logs with: docker-compose logs -f"
 }
 
 # Handle script arguments
@@ -233,19 +233,19 @@ case "${1:-deploy}" in
         ;;
     "stop")
         print_status "Stopping Somleng infrastructure..."
-        docker-compose -f docker-compose-somleng-complete.yml down
+        docker-compose down
         print_success "Infrastructure stopped"
         ;;
     "restart")
         print_status "Restarting Somleng infrastructure..."
-        docker-compose -f docker-compose-somleng-complete.yml restart
+        docker-compose restart
         print_success "Infrastructure restarted"
         ;;
     "status")
         show_status
         ;;
     "logs")
-        docker-compose -f docker-compose-somleng-complete.yml logs -f "${2:-}"
+        docker-compose logs -f "${2:-}"
         ;;
     *)
         echo "Usage: $0 {deploy|stop|restart|status|logs [service]}"
