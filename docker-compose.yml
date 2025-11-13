@@ -225,7 +225,7 @@ services:
   # =============================================================================
 
   freeswitch1:
-    image: signalwire/freeswitch:latest
+    image: safarov/freeswitch:latest
     container_name: somleng_freeswitch1
     restart: ${RESTART_POLICY:-unless-stopped}
     environment:
@@ -262,7 +262,7 @@ services:
           memory: 512M
 
   freeswitch2:
-    image: signalwire/freeswitch:latest
+    image: safarov/freeswitch:latest
     container_name: somleng_freeswitch2
     restart: ${RESTART_POLICY:-unless-stopped}
     environment:
