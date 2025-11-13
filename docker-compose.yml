@@ -128,92 +128,39 @@ services:
           memory: 256M
 
   # =============================================================================
-  # FREESWITCH MEDIA SERVERS
+  # FREESWITCH MEDIA SERVER
   # =============================================================================
 
-  freeswitch1:
+  freeswitch:
     image: ghcr.io/somleng/freeswitch:latest
-    container_name: somleng_freeswitch1
+    container_name: somleng_freeswitch
     restart: ${RESTART_POLICY:-unless-stopped}
     env_file:
       - .env
     environment:
-      - SOMLENG_API_URL=${SOMLENG_API_URL}
-      - SOMLENG_API_USERNAME=${SOMLENG_API_USERNAME}
-      - SOMLENG_API_PASSWORD=${SOMLENG_API_PASSWORD}
-      - EXT_RTP_IP=${EXT_RTP_IP}
-      - EXT_SIP_IP=${EXT_SIP_IP}
+      - FS_DATABASE_HOST=db
+      - FS_MOD_JSON_CDR_URL=http://web:3000/services/call_data_records
+      - FS_EXTERNAL_SIP_IP=${EXT_SIP_IP}
+      - FS_EXTERNAL_RTP_IP=${EXT_RTP_IP}
       - FS_EVENT_SOCKET_PASSWORD=${FS_EVENT_SOCKET_PASSWORD}
     ports:
-      - "5062:5060/udp"
-      - "5062:5060/tcp"
-      - "5063:5061/tcp"
-      - "8021:8021"  # Event Socket
-      - "16384-32767:16384-32767/udp"
-    volumes:
-      - freeswitch1_logs:/usr/local/freeswitch/log
-      - freeswitch1_recordings:/usr/local/freeswitch/recordings
+      - "5060:5060/udp"
+      - "5222:5222/tcp"
+      - "5080:5080/udp"
+      - "8021:8021/tcp"
     depends_on:
-      web:
+      db:
         condition: service_healthy
-      kamailio:
-        condition: service_started
     networks:
-      somleng_network:
-        ipv4_address: 172.20.0.10
+      - somleng_network
     healthcheck:
-      test: ["CMD", "fs_cli", "-x", "status"]
+      test: ["CMD-SHELL", "nc -z -w 5 localhost 5222"]
       interval: 30s
       timeout: 10s
       retries: 3
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 512M
-
-  freeswitch2:
-    image: ghcr.io/somleng/freeswitch:latest
-    container_name: somleng_freeswitch2
-    restart: ${RESTART_POLICY:-unless-stopped}
-    env_file:
-      - .env
-    environment:
-      - SOMLENG_API_URL=${SOMLENG_API_URL}
-      - SOMLENG_API_USERNAME=${SOMLENG_API_USERNAME}
-      - SOMLENG_API_PASSWORD=${SOMLENG_API_PASSWORD}
-      - EXT_RTP_IP=${EXT_RTP_IP}
-      - EXT_SIP_IP=${EXT_SIP_IP}
-      - FS_EVENT_SOCKET_PASSWORD=${FS_EVENT_SOCKET_PASSWORD}
-    ports:
-      - "5064:5060/udp"
-      - "5064:5060/tcp"
-      - "5065:5061/tcp"
-      - "8022:8021"  # Event Socket
-      - "32768-49151:16384-32767/udp"
     volumes:
-      - freeswitch2_logs:/usr/local/freeswitch/log
-      - freeswitch2_recordings:/usr/local/freeswitch/recordings
-    depends_on:
-      web:
-        condition: service_healthy
-      kamailio:
-        condition: service_started
-    networks:
-      somleng_network:
-        ipv4_address: 172.20.0.11
-    healthcheck:
-      test: ["CMD", "fs_cli", "-x", "status"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 512M
+      - freeswitch_logs:/usr/local/freeswitch/log
+      - freeswitch_recordings:/usr/local/freeswitch/recordings
 
   somleng-switch:
     image: ghcr.io/somleng/switch-app:latest
@@ -222,14 +169,14 @@ services:
     env_file:
       - .env
     environment:
-      - AHN_CORE_HOST=freeswitch1
+      - AHN_CORE_HOST=freeswitch
       - AHN_CORE_HTTP_PORT=8080
       - CALL_PLATFORM_HOST=http://web:3000
       - REDIS_URL=${REDIS_URL}
     depends_on:
       redis:
         condition: service_healthy
-      freeswitch1:
+      freeswitch:
         condition: service_healthy
     networks:
       somleng_network:
@@ -247,78 +194,8 @@ services:
           memory: 256M
 
   # =============================================================================
-  # SIP ROUTING AND SBC
+  # SOMLENG SWITCH (TwiML Engine)
   # =============================================================================
-
-  kamailio:
-    image: kamailio/kamailio-ci:latest
-    container_name: somleng_kamailio
-    restart: ${RESTART_POLICY:-unless-stopped}
-    env_file:
-      - .env
-    environment:
-      - KAMAILIO_DB_URL=${KAMAILIO_DB_URL}
-      - SIP_DOMAIN=${SIP_DOMAIN}
-      - SIP_REALM=${SIP_REALM}
-      - PUBLIC_IP=${PUBLIC_IP}
-    ports:
-      - "${KAMAILIO_SIP_PORT:-5060}:5060/udp"
-      - "${KAMAILIO_SIP_PORT:-5060}:5060/tcp"
-      - "${KAMAILIO_TLS_PORT:-5061}:5061/tcp"
-      - "9060:9060"  # MI interface
-    volumes:
-      - ./kamailio/config:/etc/kamailio:ro
-      - kamailio_logs:/var/log/kamailio
-      - ./nginx/ssl:/etc/ssl/certs:ro
-    depends_on:
-      db:
-        condition: service_healthy
-      rtpengine:
-        condition: service_started
-    networks:
-      somleng_network:
-        ipv4_address: 172.20.0.5
-    healthcheck:
-      test: ["CMD", "kamctl", "monitor", "1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-        reservations:
-          memory: 256M
-
-  rtpengine:
-    image: davehorton/rtpengine:latest
-    container_name: somleng_rtpengine
-    restart: ${RESTART_POLICY:-unless-stopped}
-    network_mode: host
-    environment:
-      - RTPENGINE_LISTEN_IP=${RTPENGINE_LISTEN_IP}
-      - RTPENGINE_PUBLIC_IP=${RTPENGINE_PUBLIC_IP}
-    command: >
-      rtpengine
-      --interface=${RTPENGINE_LISTEN_IP}
-      --listen-ng=127.0.0.1:2223
-      --port-min=${RTPENGINE_PORT_MIN:-20000}
-      --port-max=${RTPENGINE_PORT_MAX:-30000}
-      --recording-dir=/var/lib/rtpengine
-      --recording-method=pcap
-      --recording-format=eth
-      --log-level=6
-      --log-stderr
-      --pidfile=/var/run/rtpengine.pid
-      --no-fallback
-    volumes:
-      - rtpengine_recordings:/var/lib/rtpengine
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-        reservations:
-          memory: 256M
 
   # =============================================================================
   # SMS GATEWAY
